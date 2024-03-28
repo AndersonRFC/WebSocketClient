@@ -4,6 +4,8 @@ var buttonFile = document.getElementById("btn-file");
 var input = document.getElementById("input-text");
 var inputFile = document.getElementById("input-file");
 
+var listaMensagens = document.getElementById("lista-mensagens");
+
 console.log("ola!");
 
 console.log("tentando estabelecer conexão...");
@@ -34,13 +36,39 @@ const socket = iniciarConexão();
 // --
 
 socket.onmessage = function (event) {
-    console.log("Mensagem do servidor:", event.data);
+
+    var message = JSON.parse(event.data);
+
+    console.log("mensagem recebida: " + event);
+
+    if(message.Type === "text")
+    {
+        var itemLista = document.createElement("li");
+        itemLista.textContent = message.Name + ": " + message.Data;
+        listaMensagens.appendChild(itemLista);
+    }
+    else if (message.Type === "file")
+    {
+        var linkDownload = document.createElement("a");
+        linkDownload.textContent = "Baixar arquivo: " + message.Data.split("/")[1] + "  -  ";
+        linkDownload.href = message.Data;
+        linkDownload.download = message.Name;
+        listaMensagens.appendChild(linkDownload);
+
+        var linkVisualizacao = document.createElement("a");
+        linkVisualizacao.textContent = "Ver arquivo: " + message.Data.split("/")[1];
+        linkVisualizacao.href = message.Data;
+        linkVisualizacao.target = "_blank";
+        listaMensagens.appendChild(linkVisualizacao);
+    }
+
 };
+
 
 // --
 
 function iniciarConexão() {
-    const socket = new WebSocket("ws://localhost:5200/ws");
+    const socket = new WebSocket("ws://localhost:5072/ws");
 
     socket.onopen = (event) => {
         console.log("Conexão estabelecida");
